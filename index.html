@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Preview</title>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- diagnostic status (hidden until needed) -->
+  <div id="preview-status" style="display:none;position:fixed;left:12px;bottom:12px;padding:10px 14px;border-radius:6px;background:#fee;color:#000;box-shadow:0 2px 8px rgba(0,0,0,.12);font-family:system-ui,Arial, sans-serif;z-index:9999;"></div>
+
+  <!-- diagnostic script: shows errors and warns if root is empty -->
+  <script>
+    (function(){
+      const statusEl = document.getElementById('preview-status');
+      function show(msg, isError){
+        statusEl.style.display = 'block';
+        statusEl.textContent = msg;
+        statusEl.style.background = isError ? '#fee' : '#efe';
+      }
+      window.addEventListener('error', e => {
+        show('Error: ' + (e && e.message ? e.message : String(e)), true);
+        console.error(e);
+      });
+      window.addEventListener('unhandledrejection', e => {
+        const r = e && e.reason;
+        show('Unhandled rejection: ' + (r && r.message ? r.message : String(r)), true);
+        console.error(e);
+      });
+      // after scripts run, warn if root is still empty
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const root = document.getElementById('root');
+          if(!root || root.children.length === 0){
+            show('Blank preview — open DevTools Console (Cmd/Ctrl+Shift+I). Ensure ballard-food-trucks-static.jsx exists and does not use import/export.', true);
+          }
+        }, 700);
+      });
+    })();
+  </script>
+
+  <!-- React + ReactDOM (dev CDN) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel (in-browser transpile for simple previews only) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Your JSX file (must be in same folder). Type is text/babel so Babel transpiles it. -->
+  <script type="text/babel" src="ballard-food-trucks-static.jsx"></script>
+</body>
+</html>
